@@ -57,6 +57,8 @@ model.add(Dropout(0.5))
 model.add(Dense(num_classes))
 model.add(Activation('softmax'))
 
+config = tf.compat.v1.ConfigProto()
+config.gpu_options.allow_growth = True
 model.compile(loss='categorical_crossentropy',
               optimizer='adam',
               metrics=['accuracy'])

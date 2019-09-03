@@ -59,8 +59,7 @@ def get_vectors(model, corpus_size, vectors_size, vectors_type):
 train_vectors_dbow = get_vectors(model_dbow, len(X_train), 300, 'Train')
 test_vectors_dbow = get_vectors(model_dbow, len(X_test), 300, 'Test')
 
-logreg = LogisticRegression(n_jobs=1, C=1e5)
-logreg.fit(train_vectors_dbow, y_train)
+logreg = LogisticRegression(n_jobs=1, C=1e5, verbose=1, max_iter = 10000)
 logreg = logreg.fit(train_vectors_dbow, y_train)
 y_pred = logreg.predict(test_vectors_dbow)
 print('accuracy %s' % accuracy_score(y_pred, y_test))
