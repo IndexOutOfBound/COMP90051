@@ -40,8 +40,7 @@ X_test = vectorizer.transform(unlabeled_tweet)
 
 clf = Pipeline([
                 ('tfidf', TfidfTransformer()),
-                ('clf', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, random_state=42, max_iter=5, tol=None,
-                                      verbose=1)),
+                ('clf', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, random_state=42, max_iter=5, tol=None)),
                ])
 clf.fit(X_train, y.astype('int'))
 y_pred = clf.predict(X_test)
