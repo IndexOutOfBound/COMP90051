@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from sklearn import svm
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
@@ -6,19 +7,18 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-filepath_dict = {'yelp':   'data/yelp_labelled.txt',
-                 'amazon': 'data/amazon_cells_labelled.txt',
-                 'imdb':   'data/imdb_labelled.txt',
-                 'tweet': 'data/train_tweets.txt'}
+filepath_dict = {'tweet': 'data/train_tweets.txt'}
+unlabled_tweet_path = 'data/test_tweets_unlabeled.txt'
+
 
 df_list = []
 for source, filepath in filepath_dict.items():
-    df = pd.read_csv(filepath, names=['label', 'sentence'], sep='\t')
+    df = pd.read_csv(filepath, names=['label', 'tweet'], sep='\t')
     df['source'] = source  # Add another column filled with the source name
     df_list.append(df)
 
 df = pd.concat(df_list)
-print(df.iloc[0])
+ut = pd.read_csv(unlabled_tweet_path, sep='delimiter', header=None)
 
 # sentences = ['John likes ice cream', 'John hates chocolate.']
 # vectorizer = CountVectorizer(min_df=0, lowercase=False)
@@ -27,25 +27,36 @@ print(df.iloc[0])
 # print(vectorizer.transform(sentences).toarray())
 
 df_tweet = df[df['source'] == 'tweet']
-sentences = df_tweet['sentence'].values
-y = df_tweet['label'].values
-sentences_train, sentences_test, y_train, y_test = train_test_split(sentences, y, test_size=0.20, random_state=1000)
-
+tweet = df_tweet['tweet'].values[:1000]
+y = df_tweet['label'].values[:1000]
+tweet_test = df_tweet['tweet'].values[1001:1500]
+label_test = df_tweet['label'].values[1001:1500]
 
 vectorizer = CountVectorizer()
-vectorizer.fit(sentences_train)
+vectorizer.fit(tweet)
 
-X_train = vectorizer.transform(sentences_train)
-X_test = vectorizer.transform(sentences_test)
+X_train = vectorizer.transform(tweet)
+X_test = vectorizer.transform(tweet_test)
 
 clf = Pipeline([
                 ('tfidf', TfidfTransformer()),
                 ('clf', SGDClassifier(loss='hinge', penalty='l2',alpha=1e-3, random_state=42, max_iter=5, tol=None,
                                       verbose=1)),
                ])
-clf.fit(X_train, y_train.astype('int'))
+clf.fit(X_train, y.astype('int'))
 y_pred = clf.predict(X_test)
+print('accuracy %s' % accuracy_score(y_pred, label_test))
+print(classification_report(label_test, y_pred))
+print(y_pred.shape[0])
+f = open("predict.txt",'w')
+f.write('Id Predicted\n')
+for i in range(y_pred.shape[0]):
+    print(y_pred[i])
+    f.writelines([str(i),' ',str(y_pred[i]),'\n'])
+f.close()
 
 
-print('accuracy %s' % accuracy_score(y_pred, y_test))
-print(classification_report(y_test, y_pred,target_names=['may_tag']))
+
+
+
+
